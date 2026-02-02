@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Access Restricted</title>
+<style>
+    body {
+        margin: 0;
+        background: radial-gradient(circle at bottom, #0a0f2c, #000814);
+        color: white;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+        text-align: center;
+        position: relative;
+        background: radial-gradient(circle at bottom, #0a0f2c, #000814);
+    }
+
+   .stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background-image:
+        radial-gradient(2px 2px at 20px 30px, white, transparent),
+        radial-gradient(2px 2px at 200px 150px, white, transparent),
+        radial-gradient(1px 1px at 400px 80px, white, transparent),
+        radial-gradient(2px 2px at 600px 200px, white, transparent),
+        radial-gradient(1px 1px at 800px 120px, white, transparent);
+    animation: twinkle 5s infinite alternate;
+    opacity: 0.8;
+    z-index: 0;
+}
+
+@media only screen and (max-width: 600px) {}
+    .smoke {
+        font-size: 40px;
+    }
+    input {
+        width: 70%;       /* so it fits mobile screen */
+        font-size: 18px;
+    }
+
+    button {
+        padding: 12px 25px;
+        font-size: 16px;
+    }
+    #hud {
+        font-size: 16px;
+    }
+
+@keyframes twinkle {
+    from { opacity: 0.3; }
+    to { opacity: 1; }
+}
+
+    h1 {
+        letter-spacing: 2px;
+        color: white;
+    }
+
+    #startScreen, #winScreen, #loseScreen {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 1;
+        position: relative;
+        min-height: 100vh;
+    }
+
+    #gameScreen{
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 1;
+        position: relative;
+        background: rgba(0, 0, 0, 0.75);
+        min-height: 100vh;
+        z-index: 2; /* above stars, below smoke */
+    }
+
+    input {
+        padding: 10px;
+        font-size: 18px;
+        border-radius: 5px;
+        border: none;
+        margin-top: 15px;
+        width: 70%;
+
+    }
+
+    button {
+        margin-top: 15px;
+        background: black;
+        color: white;
+        border: 1px solid white;
+        cursor: pointer;
+        padding: 12px 25px;
+        font-size: 18px;
+    }
+
+    .smoke {
+        position: absolute;
+        font-size: 24px;
+        cursor: pointer;
+        animation: float 8s linear infinite;
+        z-index: 3;
+
+    }
+
+    @keyframes float {
+        from { transform: translateY(0px); opacity: 1; }
+        to { transform: translateY(-200px); opacity: 0; }
+    }
+
+    #hud {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 16px;
+        color: gray;
+    }
+</style>
+</head>
+<body>
+
+    <div class="stars"></div>
+
+    <audio id="bgMusic" loop>
+    <source src="Waka Flocka Flame - No Hands (feat. Roscoe Dash and Wale) _ Lyrics.mp3" type="audio/mpeg">
+</audio>
+
+<div id="startScreen">
+    <h1>ACCESS RESTRICTED</h1>
+    <p>Enter your name to attempt access.</p>
+    <input type="text" id="playerName" placeholder="Your name">
+    <button onclick="startGame()">Enter</button>
+</div>
+
+<div id="gameScreen" style="display:none;">
+    <div id="hud">
+        ⏱ Time: <span id="time">30</span>s |
+        💨 Collected: <span id="score">0</span>/20
+    </div>
+</div>
+
+<div id="winScreen" style="display:none;">
+    <h1>ACCESS GRANTED</h1>
+    <p id="welcomeText"></p>
+    <p>📍 NARGILE HOUSE BAR </p>
+    <p>🗓 19.02.2026</p>
+    <p>🕘 19:00 - 19:30</p>
+    <p></p>
+</div>
+
+<div id="loseScreen" style="display:none;">
+    <h1>ACCESS DENIED</h1>
+    <p>You failed to collect enough smoke.</p>
+    <button onclick="location.reload()">Try Again</button>
+</div>
+
+<script>
+let score = 0;
+let timeLeft = 30;
+let gameInterval;
+let smokeInterval;
+let player = "";
+
+function startGame() {
+    player = document.getElementById("playerName").value;
+    if (player.trim() === "") return;
+
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("gameScreen").style.display = "block";
+
+    gameInterval = setInterval(updateTimer, 1000);
+    smokeInterval = setInterval(createSmoke, 800);
+    document.getElementById("bgMusic").play();
+}
+
+function updateTimer() {
+    timeLeft--;
+    document.getElementById("time").textContent = timeLeft;
+
+    if (timeLeft <= 0) {
+        endGame();
+    }
+}
+
+function createSmoke() {
+    const smoke = document.createElement("div");
+    smoke.classList.add("smoke");
+    smoke.textContent = "💨";
+
+    smoke.style.left = Math.random() * window.innerWidth + "px";
+    smoke.style.top = window.innerHeight + "px";
+
+    smoke.onclick = function() {
+        score++;
+        document.getElementById("score").textContent = score;
+        smoke.remove();
+
+        if (score >= 20) {
+            winGame();
+        }
+    };
+
+    document.body.appendChild(smoke);
+
+    setTimeout(() => {
+        smoke.remove();
+    }, 8000);
+}
+
+function winGame() {
+    clearInterval(gameInterval);
+    clearInterval(smokeInterval);
+    document.getElementById("gameScreen").style.display = "none";
+    document.getElementById("winScreen").style.display = "flex";
+    document.getElementById("welcomeText").textContent = "Welcome, " + player + ". You are invited to Nuti's birthday. Wear your best attitude and be ready to drop it to the floor with the birthday girl and some shisha!";
+}
+
+function endGame() {
+    clearInterval(gameInterval);
+    clearInterval(smokeInterval);
+
+    if (score >= 20) {
+        winGame();
+    } else {
+        document.getElementById("gameScreen").style.display = "none";
+        document.getElementById("loseScreen").style.display = "flex";
+    }
+
+}
+</script>
+
+</body>
+</html>
